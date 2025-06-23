@@ -1,4 +1,6 @@
 # Codeground Backend
+[한국어 README](README.ko.md)
+
 
 This repository contains a FastAPI based backend service. It provides authentication APIs and uses PostgreSQL through SQLAlchemy and Alembic for migrations.
 
@@ -58,4 +60,3 @@ poetry run uvicorn src.app.main:app --reload
 ```
 
 The API will be available at `http://localhost:8000/`. Authentication endpoints are prefixed with `/api/v1` (e.g. `/api/v1/auth/sign-up`).
-
