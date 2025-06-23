@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.app.domain.auth import router as auth_router
+from src.app.domain.webrtc import router as webrtc_router
 from src.app.config.config import settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +27,7 @@ app.add_middleware(
 )
 
 app.include_router(router=auth_router, prefix=settings.API_V1_STR)
+app.include_router(router=webrtc_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

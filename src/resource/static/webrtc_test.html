@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CodeArena WebRTC Test</title>
+    <style>
+        video { width: 45%; margin: 2%; background: #000; }
+    </style>
+</head>
+<body>
+    <h1>CodeArena WebRTC Test</h1>
+    <div>
+        <input id="room" placeholder="Room" />
+        <input id="name" placeholder="Username" />
+        <button id="join">Join</button>
+    </div>
+    <div>
+        <video id="localVideo" autoplay playsinline></video>
+        <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+    <script>
+        let pc;
+        let ws;
+        document.getElementById('join').onclick = async () => {
+            const room = document.getElementById('room').value;
+            const name = document.getElementById('name').value;
+            if(!room) return alert('Room required');
+            ws = new WebSocket(`ws://${location.host}/api/v1/ws/webrtc/${room}?username=${encodeURIComponent(name)}`);
+            ws.onmessage = async ({ data }) => {
+                const msg = JSON.parse(data);
+                if (msg.type === 'offer') {
+                    await pc.setRemoteDescription(new RTCSessionDescription(msg));
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+                    ws.send(JSON.stringify(pc.localDescription));
+                } else if (msg.type === 'answer') {
+                    await pc.setRemoteDescription(new RTCSessionDescription(msg));
+                } else if (msg.type === 'candidate') {
+                    if (msg.candidate) {
+                        await pc.addIceCandidate(msg.candidate);
+                    }
+                }
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = stream;
+            pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+            pc.onicecandidate = ({ candidate }) => {
+                if (candidate) {
+                    ws.send(JSON.stringify({ type: 'candidate', candidate }));
+                }
+            };
+            pc.ontrack = (event) => {
+                document.getElementById('remoteVideo').srcObject = event.streams[0];
+            };
+            pc.onnegotiationneeded = async () => {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                ws.send(JSON.stringify(pc.localDescription));
+            };
+        };
+    </script>
+</body>
+</html>
