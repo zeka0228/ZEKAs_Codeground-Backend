@@ -1,0 +1,37 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4
+    hooks:
+      - id: autoflake
+        args:
+          - --in-place
+          - --remove-unused-variables
+          - --remove-all-unused-imports
+          - --expand-star-imports
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+  - repo: https://github.com/psf/black
+    rev: 23.11.0
+    hooks:
+      - id: black
+#  - repo: local
+#    hooks:
+#      - id: pytest-cov
+#        name: pytest-cov
+#        language: system
+#        entry: pytest -v -n auto --cov=app tests/ --cov-fail-under=80 --cov-report=html
+#        types: [python]
+#        pass_filenames: false
+#        always_run: True
+default_language_version:
+  python: python3.11
