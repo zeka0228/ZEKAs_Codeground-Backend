@@ -1,6 +1,7 @@
 import uvicorn
 from pathlib import Path
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,9 +30,9 @@ app.include_router(router=auth_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def health_check():
-    return RedirectResponse("/")
+    return JSONResponse({"status": "ok"})
 
 
 # test
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
