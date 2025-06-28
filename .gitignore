@@ -69,3 +69,4 @@ prof/*
 /htmlcov/
 /tests/htmlcov/
 /.env
+/.venv

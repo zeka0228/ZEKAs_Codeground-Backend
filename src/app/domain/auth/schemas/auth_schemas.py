@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, constr, EmailStr
 from src.app.config.config import settings
 
 
@@ -11,10 +11,11 @@ class TokenResponse(BaseModel):
 
 
 class UserSignupRequest(BaseModel):
-    email: str
+    email: EmailStr
     username: str
-    password: str
+    password: constr(min_length=8, max_length=20)
     nickname: str
+    use_lang: Optional[str] = "python3"  # 기본값 주자
 
 
 class UserSignupResponse(BaseModel):
