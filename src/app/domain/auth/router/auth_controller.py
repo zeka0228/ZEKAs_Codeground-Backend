@@ -9,7 +9,6 @@ from src.app.domain.auth.service import auth_service as service
 from src.app.core.security import create_access_token
 from src.app.domain.auth.crud import auth_crud as crud
 from fastapi import APIRouter, Depends, HTTPException, status, Response
-from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
@@ -26,16 +25,10 @@ async def sign_up(response: Response, sign_up_request: schemas.UserSignupRequest
         # 3. 회원가입 진행
         await service.join(db, sign_up_request)
         db.commit()
-        # 4. 회원가입 성공 시 새로운 acces_token 생성
-        access_token = create_access_token(subject=str(sign_up_request.email))
-        # 5. 반환
-        return JSONResponse(
-            status_code=200,
-            content={
-                "message": "회원가입이 완료되었습니다.",
-                "data": schemas.TokenResponse(access_token=access_token).model_dump(),
-            },
-        )
+        # 3. 회원가입 성공 시 새로운 acces_token 생성
+        access_token = create_access_token(subject=sign_up_request.email)
+        # 4. 반환
+        return schemas.TokenResponse(access_token=access_token)
     except HTTPException:
         db.rollback()
         raise
@@ -51,6 +44,7 @@ async def login(
 ):
     try:
         user = await service.authenticate_user(db, from_data.username, from_data.password)
+
         access_token = create_access_token(subject=user.email)
         return schemas.TokenResponse(access_token=access_token)
     except HTTPException as e:

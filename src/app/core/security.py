@@ -24,8 +24,8 @@ def create_access_token(
     subject: str,
     expires_delta: Optional[int] = None,
     key: str = settings.SECRET_KEY,
-    issuer: str = "Jungle_every_time",
-    audience: Optional[str] = "Jungle_every_time",
+    issuer: str = "codeground",
+    audience: Optional[str] = "codeground",
 ) -> str:
     now = datetime.now(timezone.utc)
     expire = now + timedelta(minutes=expires_delta or settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -55,9 +55,7 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def decode_token(
-    token: str, key: str = settings.SECRET_KEY, issuer: str = "Jungle_every_time", audience: str = "Jungle_every_time"
-):
+def decode_token(token: str, key: str = settings.SECRET_KEY, issuer: str = "codeground", audience: str = "codeground"):
     try:
         payload = jwt.decode(token, key, algorithms=[ALGORITHM], audience=audience, issuer=issuer)
         return payload.get("sub")

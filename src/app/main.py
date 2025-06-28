@@ -3,11 +3,12 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.app.domain.auth import router as auth_router
 from src.app.domain.webrtc import router as webrtc_router
+from src.app.domain.match import router as match_router
+from src.app.domain.user import router as user_router
 from src.app.config.config import settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,9 +19,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8000",
-    ],  # Specify allowed origins
+    allow_origins=["*"],  # Specify allowed origins
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],  # Specify allowed methods
     allow_headers=["Authorization", "Content-Type"],  # Specify allowed headers
@@ -28,6 +27,8 @@ app.add_middleware(
 
 app.include_router(router=auth_router, prefix=settings.API_V1_STR)
 app.include_router(router=webrtc_router, prefix=settings.API_V1_STR)
+app.include_router(router=match_router, prefix=settings.API_V1_STR)
+app.include_router(router=user_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

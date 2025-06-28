@@ -10,7 +10,7 @@ load_dotenv(ENV_PATH)
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = os.environ.get("ENV", "DEV")
-    SITE_DOMAIN: str = "jungle_every_time"
+    SITE_DOMAIN: str = "codeground"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 14
     SECRET_KEY: str = os.environ.get("SECRET_KEY", "")
