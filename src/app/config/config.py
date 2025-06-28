@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str = os.environ.get("DB_PASSWORD", "")
     DB_NAME: str = os.environ.get("DB_NAME", "")
     DB_URL: str = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
+    ONLINE_JUDGE_HOST_ENDPOINT: str = os.environ.get("ONLINE_JUDGE_HOST_ENDPOINT", "")
 
 
 settings = Settings()
