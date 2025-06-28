@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from src.app.models.models import User
+from src.app.models.models import User, UserMmr
 from src.app.domain.auth.schemas import auth_schemas as schemas
 
 
@@ -20,4 +20,8 @@ async def join_user(db: Session, sign_up_request: schemas.UserSignupRequest) -> 
         password=sign_up_request.password,
     )
     db.add(new_user)
+    # mmr db 반영 추가
+    db.flush()
+    mmr_row = UserMmr(user_id=new_user.user_id)
+    db.add(mmr_row)
     return new_user
