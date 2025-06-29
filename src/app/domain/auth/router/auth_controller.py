@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from src.app.core.database import get_db
 from src.app.domain.auth.schemas import auth_schemas as schemas
 from src.app.domain.auth.service import auth_service as service
-from src.app.core.security import create_access_token
+from src.app.core.token import create_access_token
 from src.app.domain.auth.crud import auth_crud as crud
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 
