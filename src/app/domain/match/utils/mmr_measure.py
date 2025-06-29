@@ -68,7 +68,9 @@ def update_sigma(pie: float, sigma: float, delta: float, v: float) -> float:
             a_result, fa_result = b_result, fb_result
         else:
             fa_result = fa_result / 2.0
+
         b_result, fb_result = c_result, fc_result
+
     return math.exp(a_result / 2.0)
 
 
