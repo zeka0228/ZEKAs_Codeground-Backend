@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from src.app.core.database import get_db
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from src.app.utils.ws_manager import WSManager
+from src.app.utils.game_session import game_user_map
 import asyncio
 from src.app.core.security import get_current_user
 from src.app.models.models import User
@@ -72,6 +73,10 @@ async def handle_accept(match_id: int, user_id: int):
     users = list(ws_manager.match_state[match_id].keys())
 
     if all(ws_manager.match_state[match_id].values()):
+        users = list(ws_manager.match_state[match_id].keys())
+        # 여기에서 게임방 유저 등록
+        game_user_map[match_id + 1000] = users
+
         await ws_manager.broadcast(
             users, {"type": "match_accepted", "game_id": match_id + 1000, "join_url": f"/game/{match_id + 1000}"}
         )
