@@ -3,7 +3,7 @@ from typing import Optional
 from src.app.domain.match.utils.mmr_measure import full_update, MatchScore
 from src.app.domain.user.crud.user_crud import get_user_by_id
 from sqlalchemy.orm import Session
-from src.app.models.models import UserMmr
+from src.app.models.models import Match, UserMmr
 
 
 async def get_mmr_by_id(db: Session, user_id: int) -> Optional[UserMmr]:  # User -> Optional[User]로 수정
@@ -88,3 +88,22 @@ async def create_log(db: Session, match_id: int, user_a_id: int, user_b_id: int,
     db.add_all([user_a_log, user_b_log])
     db.commit()
     return
+
+
+async def create_match(db: Session, problem_id: int):
+    match = Match(problem_id=problem_id, matching_status="created")
+    db.add(match)
+    db.flush()
+    db.refresh(match)
+    return match
+
+
+async def create_match_logs(db: Session, match_id: int, user_ids: list[int], problem_id: int):
+    for uid in user_ids:
+        db.add(
+            MatchLog(
+                match_id=match_id,
+                user_id=uid,
+                problem_id=problem_id,
+            )
+        )
