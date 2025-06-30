@@ -2,8 +2,12 @@ from src.app.domain.match.utils.queues import hard_queue, normal_queue, queue_lo
 from src.app.domain.match.utils.matcher import hybrid_match, hard_match, force_match
 from datetime import datetime, timezone
 import asyncio
+from sqlalchemy.orm import Session
+from src.app.domain.match.crud import match_crud
+from src.app.domain.problem.crud import problem_crud
+from src.app.models.models import Match
 from src.app.utils.ws_manager import ws_manager
-from src.app.domain.match.router.match_controller import handle_match_timeout
+
 from itertools import count
 
 # 매칭 루프 타이머
@@ -105,6 +109,21 @@ async def dispatch_pairs(pairs, algo):
 
         # 20초 타임아웃
         asyncio.create_task(handle_match_timeout(match_id, [u1.id, u2.id], 20))
+
+
+async def handle_match_timeout(match_id: int, users: list[int], timeout: int):
+    await asyncio.sleep(timeout)
+    if match_id in ws_manager.match_state and not all(ws_manager.match_state[match_id].values()):
+        await ws_manager.broadcast(users, {"type": "match_cancelled", "reason": "timeout or rejection"})
+        ws_manager.match_state.pop(match_id, None)
+
+
+async def create_match_with_logs(db: Session, user_ids: list[int]) -> tuple[Match, int]:
+    problem = await problem_crud.get_random_problem(db)
+    match = await match_crud.create_match(db, problem.problem_id)
+    await match_crud.create_match_logs(db, match.match_id, user_ids, problem.problem_id)
+    db.commit()
+    return match, problem.problem_id
 
 
 match_service = MatchService()

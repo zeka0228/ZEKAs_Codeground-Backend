@@ -5,13 +5,11 @@ from src.app.core.database import get_db
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from src.app.utils.ws_manager import ws_manager
 from src.app.utils.game_session import game_user_map
-import asyncio
 from src.app.domain.match.utils.queues import enqueue_user, dequeue_user, queue_lock, user_cache, requeue_user
+from src.app.domain.match.service import match_service as service
 from src.app.domain.user.service.user_service import get_user_data
 
 router = APIRouter()
-match_id_counter = 1
-
 DB = Annotated[Session, Depends(get_db)]
 
 
@@ -34,7 +32,7 @@ async def websocket_endpoint(
         while True:
             data = await websocket.receive_json()
             if data["type"] == "match_accept":
-                await handle_accept(data["match_id"], user_id)
+                await handle_accept(data["match_id"], user_id, db)
             elif data["type"] == "match_reject":
                 await handle_match_reject(data["match_id"], user_id)
             elif data["type"] == "cancel_queue":
@@ -66,7 +64,7 @@ async def websocket_endpoint(
 #     asyncio.create_task(handle_match_timeout(match_id, [user1, user2], 20))
 
 
-async def handle_accept(match_id: int, user_id: int):
+async def handle_accept(match_id: int, user_id: int, db: Session):
     if match_id not in ws_manager.match_state:
         return
 
@@ -75,22 +73,16 @@ async def handle_accept(match_id: int, user_id: int):
 
     if all(ws_manager.match_state[match_id].values()):
         users = list(ws_manager.match_state[match_id].keys())
+
+        match, problem_id = await service.create_match_with_logs(db, users)
         # 여기에서 게임방 유저 등록
         for uid in users:
             user_cache.pop(uid, None)
-
-        game_user_map[match_id + 1000] = users
+        game_user_map[match.match_id] = users
 
         await ws_manager.broadcast(
-            users, {"type": "match_accepted", "game_id": match_id + 1000, "join_url": f"/game/{match_id + 1000}"}
+            users, {"type": "match_accepted", "game_id": match.match_id, "join_url": f"/game/{match.match_id}"}
         )
-        ws_manager.match_state.pop(match_id, None)
-
-
-async def handle_match_timeout(match_id: int, users: list[int], timeout: int):
-    await asyncio.sleep(timeout)
-    if match_id in ws_manager.match_state and not all(ws_manager.match_state[match_id].values()):
-        await ws_manager.broadcast(users, {"type": "match_cancelled", "reason": "timeout or rejection"})
         ws_manager.match_state.pop(match_id, None)
 
 
