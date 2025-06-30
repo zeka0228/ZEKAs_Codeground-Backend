@@ -8,7 +8,7 @@ from src.app.utils.game_session import game_user_map
 from src.app.domain.match.utils.queues import enqueue_user, dequeue_user, queue_lock, user_cache, requeue_user
 from src.app.domain.match.service import match_service as service
 from src.app.domain.user.service.user_service import get_user_data
-
+from src.app.models.models import Problem
 router = APIRouter()
 DB = Annotated[Session, Depends(get_db)]
 
@@ -75,14 +75,28 @@ async def handle_accept(match_id: int, user_id: int, db: Session):
         users = list(ws_manager.match_state[match_id].keys())
 
         match, problem_id = await service.create_match_with_logs(db, users)
+        problem = db.query(Problem).filter(Problem.problem_id == problem_id).first()
+
         # 여기에서 게임방 유저 등록
         for uid in users:
             user_cache.pop(uid, None)
         game_user_map[match.match_id] = users
 
-        await ws_manager.broadcast(
-            users, {"type": "match_accepted", "game_id": match.match_id, "join_url": f"/game/{match.match_id}"}
-        )
+        msg = {
+            "type": "match_accepted",
+            "game_id": match.match_id,
+            "join_url": f"/game/{match.match_id}",
+            "problem": {
+                "problem_id": problem.problem_id,
+                "title": problem.title,
+                "description": problem.problem_prefix,
+                "category": problem.category,
+                "difficulty": problem.difficulty,
+            },
+        }
+        print("[DEBUG] ws_manager.broadcast(match_accepted):", msg)
+        await ws_manager.broadcast(users, msg)
+
         ws_manager.match_state.pop(match_id, None)
 
 
