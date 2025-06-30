@@ -63,9 +63,11 @@ class MatchLog(Base):
     problem_id = Column(Integer, ForeignKey("problem.problem_id"))
     problem = relationship("Problem", back_populates="match_logs")
 
-    result = Column(Enum(MatchResult))
+    result = Column(Enum(MatchResult), nullable=True)
     mmr_earned = Column(Float, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    opponent_mmr = Column(Float, nullable=True)
+    opponent_rd = Column(Float, nullable=True)
     is_consumed = Column(Boolean, server_default=text("FALSE"))
 
 
