@@ -30,7 +30,7 @@ async def enqueue_user(db: Session, user: User) -> None:
 async def dequeue_user(user_id: int) -> None:
     for q in (normal_queue, hard_queue):
         for i, u in enumerate(q):
-            if u["user_id"] == user_id:
+            if u.id == user_id:
                 del q[i]
                 break
     return

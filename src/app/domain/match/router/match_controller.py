@@ -3,14 +3,13 @@ from sqlalchemy.orm import Session
 
 from src.app.core.database import get_db
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from src.app.utils.ws_manager import WSManager
+from src.app.utils.ws_manager import ws_manager
 from src.app.utils.game_session import game_user_map
 import asyncio
 from src.app.domain.match.utils.queues import enqueue_user, dequeue_user, queue_lock
 from src.app.domain.user.service.user_service import get_user_data
 
 router = APIRouter()
-ws_manager = WSManager()
 match_id_counter = 1
 
 DB = Annotated[Session, Depends(get_db)]
