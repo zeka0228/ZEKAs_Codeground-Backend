@@ -5,18 +5,16 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from src.app.domain.match.service.match_service import MatchService  # ★ 매칭 루프
 from src.app.domain.auth import router as auth_router
 from src.app.domain.webrtc import router as webrtc_router
 from src.app.domain.match import router as match_router
 from src.app.domain.user import router as user_router
 from src.app.domain.game import router as game_router
 from src.app.config.config import settings
+from src.app.domain.match.service.match_service import match_service
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "resource" / "static"
-
-match_service = MatchService()
 
 
 @asynccontextmanager

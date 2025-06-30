@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 normal_queue: deque = deque()
 hard_queue: deque = deque()
 queue_lock: asyncio.Lock = asyncio.Lock()
+user_cache: dict[int, MatchingUserInfo] = {}
 
 
 async def enqueue_user(db: Session, user: User) -> None:
@@ -22,7 +23,7 @@ async def enqueue_user(db: Session, user: User) -> None:
         # 이미 큐에 있는지 검사
         if _exists_in_queue(waiting_user.id):
             return  # 혹은 raise HTTPException(400, "already joined")
-
+        await cache_user(waiting_user)
         normal_queue.append(waiting_user)
         print(normal_queue)
 
@@ -38,3 +39,16 @@ async def dequeue_user(user_id: int) -> None:
 
 def _exists_in_queue(user_id: int) -> bool:
     return any(u.id == user_id for u in normal_queue) or any(u.id == user_id for u in hard_queue)
+
+
+async def cache_user(user: MatchingUserInfo) -> None:
+    user_cache[user.id] = user
+
+
+async def requeue_user(user_id: int) -> None:
+    """거절된 상대 유저를 joined_at 유지 상태로 다시 큐에 넣는다."""
+    async with queue_lock:
+        user = user_cache.pop(user_id)
+        if user:
+            await cache_user(user)
+            normal_queue.append(user)

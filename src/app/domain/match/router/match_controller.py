@@ -6,7 +6,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from src.app.utils.ws_manager import ws_manager
 from src.app.utils.game_session import game_user_map
 import asyncio
-from src.app.domain.match.utils.queues import enqueue_user, dequeue_user, queue_lock
+from src.app.domain.match.utils.queues import enqueue_user, dequeue_user, queue_lock, user_cache, requeue_user
 from src.app.domain.user.service.user_service import get_user_data
 
 router = APIRouter()
@@ -76,6 +76,9 @@ async def handle_accept(match_id: int, user_id: int):
     if all(ws_manager.match_state[match_id].values()):
         users = list(ws_manager.match_state[match_id].keys())
         # 여기에서 게임방 유저 등록
+        for uid in users:
+            user_cache.pop(uid, None)
+
         game_user_map[match_id + 1000] = users
 
         await ws_manager.broadcast(
@@ -96,22 +99,22 @@ async def handle_match_reject(match_id: int, rejecting_user: int):
         return
 
     users = list(ws_manager.match_state[match_id].keys())
+    accepted_user_id = [uid for uid in users if uid != rejecting_user][0]  # 상대 유저 ID 추출
+    # 상대 유저를 다시 큐에 넣기
+    await requeue_user(accepted_user_id)
 
+    # 거절 브로드캐스트 및 상태 제거
     await ws_manager.broadcast(users, {"type": "match_cancelled", "reason": "rejected", "rejected_by": rejecting_user})
-
     ws_manager.match_state.pop(match_id, None)
 
 
 async def match_cancel(user_id: int):
-    try:
-        await asyncio.wait_for(queue_lock.acquire(), timeout=0)
-    except asyncio.TimeoutError:
-        # 매칭 루프가 돌면서 락을 잡고 있는 상태 → 요청만 무시
-        return {"ok": True}
-
+    user_cache.pop(user_id, None)
+    await queue_lock.acquire()
     try:
         await dequeue_user(user_id)
 
     finally:
         queue_lock.release()
+
     return {"ok": True}
