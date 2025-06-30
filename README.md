@@ -95,3 +95,16 @@ their peer connections.
 **Important:** modern browsers increasingly block plain `ws://` connections.
 When deploying anywhere other than `localhost`, run the server behind HTTPS and
 connect using `wss://` with a valid certificate.
+
+### Sample Code Submission Frontend
+
+A minimal page at `/static/submit_sse.html` demonstrates streaming judge results using
+server-sent events. Run the backend and open the page to try it out:
+
+```bash
+poetry run uvicorn src.app.main:app --reload
+# then visit http://localhost:8000/static/submit_sse.html
+```
+
+Enter the problem ID and your code, then click **Run** to watch raw progress
+messages appear in real time.
