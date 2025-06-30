@@ -66,4 +66,5 @@ async def test_join_user():
     assert new_user.email == sign_up_request.email
     assert new_user.nickname == sign_up_request.nickname
     assert new_user.password == sign_up_request.password
-    mock_db.add.assert_called_once_with(new_user)
+    assert mock_db.add.call_count == 2
+    mock_db.add.assert_any_call(new_user)

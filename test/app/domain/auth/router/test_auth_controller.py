@@ -1,8 +1,11 @@
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from fastapi import HTTPException
+from unittest.mock import MagicMock
 from src.app.main import app
+from src.app.core.database import get_db
 
+app.dependency_overrides[get_db] = lambda: MagicMock()
 client = TestClient(app)
 
 
@@ -12,7 +15,8 @@ client = TestClient(app)
 )
 @patch("src.app.domain.auth.service.auth_service.join", return_value=True)
 @patch("src.app.domain.auth.router.auth_controller.create_access_token", return_value="test_token")
-def test_sign_up_duplicate_email(mock_create_token, mock_join, mock_check_email):
+@patch("src.app.domain.auth.service.auth_service.check_duplicate_nickname", return_value=False)
+def test_sign_up_duplicate_email(mock_check_nick, mock_create_token, mock_join, mock_check_email):
     # given
     sign_up_data = {"email": "test@test.com", "username": "testuser", "password": "password", "nickname": "testnick"}
 
@@ -33,7 +37,8 @@ def test_sign_up_duplicate_email(mock_create_token, mock_join, mock_check_email)
     side_effect=HTTPException(status_code=400, detail="Fail Sign Up User"),
 )
 @patch("src.app.domain.auth.router.auth_controller.create_access_token", return_value="test_token")
-def test_sign_up_join_fail(mock_create_token, mock_join, mock_check_email):
+@patch("src.app.domain.auth.service.auth_service.check_duplicate_nickname", return_value=False)
+def test_sign_up_join_fail(mock_check_nick, mock_create_token, mock_join, mock_check_email):
     # given
     sign_up_data = {"email": "test@test.com", "username": "testuser", "password": "password", "nickname": "testnick"}
 

@@ -55,4 +55,6 @@ typing_extensions==4.14.0
 uvicorn==0.34.3
 virtualenv==20.31.2
 numpy==2.3.1
+sse-starlette==2.3.6
+websockets==11.0.3
 scipy == 1.16.0
