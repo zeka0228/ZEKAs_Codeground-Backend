@@ -7,7 +7,7 @@ from src.app.domain.match.router.match_controller import handle_match_timeout
 from itertools import count
 
 # 매칭 루프 타이머
-MATCH_INTERVAL = 30  # 초 세팅 0.5 = 500ms
+MATCH_INTERVAL = 1  # 초 세팅 0.5 = 500ms
 GO_TO_HARD = 180  # 강제 풀 배치 기준 180 = 180s
 match_id_counter = count(1)
 
@@ -88,20 +88,20 @@ async def dispatch_pairs(pairs, algo):
         match_id = next(match_id_counter)
 
         ws_manager.match_state[match_id] = {
-            u1.user_id: False,
-            u2.user_id: False,
+            u1.id: False,
+            u2.id: False,
         }
 
         await ws_manager.broadcast(
-            [u1.user_id, u2.user_id],
+            [u1.id, u2.id],
             {
                 "type": "match_found",
                 "match_id": match_id,
-                "opponent_ids": [u1.user_id, u2.user_id],
+                "opponent_ids": [u1.id, u2.id],
                 "time_limit": 20,
                 "algo": algo,
             },
         )
 
         # 20초 타임아웃
-        asyncio.create_task(handle_match_timeout(match_id, [u1.user_id, u2.user_id], 20))
+        asyncio.create_task(handle_match_timeout(match_id, [u1.id, u2.id], 20))
