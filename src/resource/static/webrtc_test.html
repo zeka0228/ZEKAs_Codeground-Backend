@@ -69,8 +69,8 @@
           `user-${Math.random().toString(36).slice(2, 7)}`;
         if (!room) return alert("Room required");
 
-        localStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+        localStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: "always" },
           audio: true,
         });
         document.getElementById("localVideo").srcObject = localStream;

@@ -17,6 +17,7 @@ async def game_websocket(websocket: WebSocket, game_id: int, user_id: int = Quer
 
     await websocket.accept()
     game_rooms[game_id].append(websocket)
+    ready_status[game_id][user_id] = False
 
     try:
         while True:
@@ -29,6 +30,9 @@ async def game_websocket(websocket: WebSocket, game_id: int, user_id: int = Quer
         # 연결 종료 시 정리
         if websocket in game_rooms[game_id]:
             game_rooms[game_id].remove(websocket)
+
+        if user_id in ready_status.get(game_id, {}):
+            ready_status[game_id].pop(user_id, None)
 
         if not game_rooms[game_id]:
             game_rooms.pop(game_id, None)
@@ -51,6 +55,12 @@ async def handle_game_message(websocket: WebSocket, game_id: int, user_id: int, 
             await broadcast_to_room(
                 game_id, {"type": "webrtc_signal", "sender": user_id, "signal": data.get("signal")}, exclude=websocket
             )
+
+        elif message_type == "ready":
+            ready_status[game_id][user_id] = True
+            await broadcast_to_room(game_id, {"type": "player_ready", "user_id": user_id})
+            if all(ready_status[game_id].values()):
+                await broadcast_to_room(game_id, {"type": "all_ready"})
 
         elif message_type == "submit":
             # 채점 요청은 백엔드 채점 큐로 전달 (여기서는 예시용 로깅만)
