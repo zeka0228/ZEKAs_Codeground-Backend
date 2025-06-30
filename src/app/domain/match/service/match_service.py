@@ -62,7 +62,6 @@ class MatchService:
                     else:
                         hard_queue.append(hard_list[0])
             normal_queue.extend(waiting)
-
         # 매칭 성공 쌍에게 매칭 완료 함수 시행
         await dispatch_pairs(pairs, algo)
 
