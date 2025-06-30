@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from src.app.models.models import User, UserMmr
+from src.app.models.models import User, UserMmr, UserRole
 from src.app.domain.auth.schemas import auth_schemas as schemas
 from typing import Optional  # 추가 코드
 
@@ -22,12 +22,15 @@ async def join_user(db: Session, sign_up_request: schemas.UserSignupRequest) -> 
         username=sign_up_request.username,
         email=str(sign_up_request.email),
         nickname=sign_up_request.nickname,
+        role=UserRole.USER,
         password=sign_up_request.password,  # 해시된 값
         use_lang=sign_up_request.use_lang,  # 사용언어 선택
     )
     db.add(new_user)
     # mmr db 반영 추가
     db.flush()
+    db.refresh(new_user)
     mmr_row = UserMmr(user_id=new_user.user_id)
     db.add(mmr_row)
+
     return new_user

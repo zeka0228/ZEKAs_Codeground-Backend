@@ -21,6 +21,7 @@ match_service = MatchService()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    print("matching 시작")
     match_service.start()  # 백그라운드 매칭 루프 시작
     yield
     await match_service.stop()  # 서버 종료 시 안전하게 취소

@@ -6,23 +6,24 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from src.app.utils.ws_manager import WSManager
 from src.app.utils.game_session import game_user_map
 import asyncio
-from src.app.core.security import get_current_user
-from src.app.models.models import User
 from src.app.domain.match.utils.queues import enqueue_user, dequeue_user, queue_lock
-
+from src.app.domain.user.service.user_service import get_user_data
 
 router = APIRouter()
 ws_manager = WSManager()
 match_id_counter = 1
 
 DB = Annotated[Session, Depends(get_db)]
-VALID_USER = Annotated[User, Depends(get_current_user)]
 
 
 @router.websocket("/ws/match/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: int, db: DB, current_user: VALID_USER):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    user_id: int,
+    db: DB,
+):
     user_id = int(user_id)
-
+    current_user = await get_user_data(db, user_id)
     # ── 2) 매칭 큐 등록 ────────────────────
     await enqueue_user(db, current_user)  # 반드시 await
 
@@ -30,6 +31,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int, db: DB, current
     await ws_manager.connect(user_id, websocket)
 
     try:
+
         while True:
             data = await websocket.receive_json()
             if data["type"] == "match_accept":
