@@ -1,4 +1,4 @@
-from src.app.domain.match.utils.queues import normal_queue, hard_queue, queue_lock
+from src.app.domain.match.utils.queues import hard_queue, normal_queue, queue_lock
 from src.app.domain.match.utils.matcher import hybrid_match, hard_match, force_match
 from datetime import datetime, timezone
 import asyncio
@@ -105,3 +105,6 @@ async def dispatch_pairs(pairs, algo):
 
         # 20초 타임아웃
         asyncio.create_task(handle_match_timeout(match_id, [u1.id, u2.id], 20))
+
+
+match_service = MatchService()
