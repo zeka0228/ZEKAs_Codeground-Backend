@@ -3,22 +3,16 @@ from pydantic import BaseModel, constr, EmailStr
 from src.app.config.config import settings
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: Optional[str] = None
-    token_type: str = "bearer"
-    expires_in: int = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
-
-
-class UserSignupRequest(BaseModel):
+class SignupRequest(BaseModel):
     email: EmailStr
     username: str
     password: constr(min_length=8, max_length=20)
     nickname: str
-    use_lang: Optional[str] = "python3"  # 기본값 주자
+    use_lang: str  # 예: Python, Java, C, C++
+    tier_choice: str  # 예: 브론즈, 실버, 골드, 플래티넘 이상, 티어 없음
 
 
-class UserSignupResponse(BaseModel):
+class SignupResponse(BaseModel):
     email: str
     username: str
     nickname: str
@@ -26,7 +20,14 @@ class UserSignupResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class UserDto(BaseModel):
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: Optional[str] = None
+    token_type: str = "bearer"
+    expires_in: int = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+
+
+class LoginUserDto(BaseModel):
     email: str
     username: str
     nickname: str
