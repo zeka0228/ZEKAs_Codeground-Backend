@@ -78,13 +78,17 @@ async def handle_game_message(db, websocket: WebSocket, game_id: int, user_id: i
         # 각 reason 은 "finish" / "timeout" / "surrender"
         elif message_type == "match_result":
             reason = data.get("reason")
+            print("시작")
             winner_id, reason = await process_match_result(db, game_id, user_id, opponent_id, reason)
+            print(winner_id, reason)
             await websocket.send_json({"type": "match_result", "winner": winner_id, "reason": reason})
 
         else:
+            print("에러 1")
             await websocket.send_json({"type": "error", "message": "Unknown message type"})
 
     except Exception as e:
+        print("에러 2")
         await websocket.send_json({"type": "error", "message": str(e)})
 
 
@@ -98,11 +102,11 @@ async def broadcast_to_room(game_id: int, message: dict, exclude: WebSocket = No
 async def process_match_result(
     db: Session, game_id: int, user_id: int, opponent_id: int, reason: str
 ) -> (int | None, str):
-    opponent_result = search_result(db, opponent_id)
+    opponent_result = await search_result(db, game_id, opponent_id)
     # 기권 시
     if reason in ("surrender", "abandon"):
         await update_user_log(db, game_id, user_id, "loss")
-        if opponent_result == "lose":
+        if opponent_result and opponent_result == "loss":
             await update_match(db, game_id, "abnormal")
         # 패배
         return opponent_id, "surrender"

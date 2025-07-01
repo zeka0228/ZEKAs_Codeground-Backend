@@ -12,6 +12,10 @@ async def get_log_by_id(db: Session, input_id: int) -> Optional[MatchLog]:
     return db.query(MatchLog).filter(MatchLog.user_id == input_id, MatchLog.is_consumed.is_(False)).first()
 
 
+async def get_log_by_game_id(db: Session, match_id: int, input_id: int) -> Optional[MatchLog]:
+    return db.query(MatchLog).filter(MatchLog.user_id == input_id, MatchLog.match_id == match_id).first()
+
+
 async def create_match(db: Session, problem_id: int):
     match = Match(problem_id=problem_id, matching_status="created")
     db.add(match)

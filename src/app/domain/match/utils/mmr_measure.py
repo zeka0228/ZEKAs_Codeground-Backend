@@ -56,7 +56,7 @@ def update_sigma(pie: float, sigma: float, delta: float, v: float) -> float:
         b_result = math.log(square_delta - square_pie - v)
     else:
         k = 1
-        while f(a - k * TAU) > 0:
+        while f(a - k * TAU) < 0:
             k += 1
         b_result = a - (k * TAU)
 
