@@ -1,11 +1,13 @@
+from src.app.domain.game.service.problem_selector import select_problem_for_tiers
 from src.app.domain.match.utils.queues import hard_queue, normal_queue, queue_lock
 from src.app.domain.match.utils.matcher import hybrid_match, hard_match, force_match
 from datetime import datetime, timezone
 import asyncio
 from sqlalchemy.orm import Session
 from src.app.domain.match.crud import match_crud
-from src.app.domain.problem.crud import problem_crud
+from src.app.domain.user.crud.user_crud import get_user_mmr
 from src.app.models.models import Match
+from src.app.utils.tier_util import mmr_to_tier
 from src.app.utils.ws_manager import ws_manager
 
 from itertools import count
@@ -82,7 +84,7 @@ class MatchService:
             except asyncio.CancelledError:
                 pass
 
-
+# 되는거
 async def dispatch_pairs(pairs, algo):
     """
     pairs: List[Tuple[MatchingUserInfo, MatchingUserInfo]]
@@ -119,7 +121,9 @@ async def handle_match_timeout(match_id: int, users: list[int], timeout: int):
 
 
 async def create_match_with_logs(db: Session, user_ids: list[int]) -> tuple[Match, int]:
-    problem = await problem_crud.get_random_problem(db)
+    mmrs = [get_user_mmr(db, uid) for uid in user_ids]
+    tiers = [mmr_to_tier(mmr) for mmr in mmrs]
+    problem = select_problem_for_tiers(db, tiers[0], tiers[1])
     match = await match_crud.create_match(db, problem.problem_id)
     await match_crud.create_match_logs(db, match.match_id, user_ids, problem.problem_id)
     db.commit()
