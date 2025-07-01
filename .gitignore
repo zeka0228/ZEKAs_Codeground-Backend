@@ -71,3 +71,4 @@ prof/*
 /tests/htmlcov/
 /.env
 /.venv
+/migration/versions/
