@@ -7,7 +7,6 @@ from src.app.domain.auth.crud import auth_crud as crud
 from src.app.domain.auth.schemas import auth_schemas as schemas
 from src.app.core.password import get_password_hash, verify_password
 from src.app.utils.email import send_email
-from src.app.domain.user.schemas.user_schemas import convert_choice_to_mmr
 
 reset_code_store = {}
 
@@ -24,8 +23,8 @@ async def check_duplicate_nickname(db: Session, nickname: str) -> None:
 
 async def join(db: Session, sign_up_request: schemas.SignupRequest) -> schemas.SignupResponse:
     sign_up_request.password = get_password_hash(sign_up_request.password)
-    mmr = convert_choice_to_mmr(sign_up_request.tier_choice)
-
+    # mmr = convert_choice_to_mmr(sign_up_request.tier_choice)
+    mmr = 1000
     new_user = crud.join_user(db=db, sign_up_request=sign_up_request, use_lang=sign_up_request.use_lang, mmr=mmr)
 
     if not new_user:

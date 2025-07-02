@@ -141,4 +141,4 @@ class UserSignupRequest(BaseModel):
     password: str
     nickname: str
     use_lang: str  # Python, Java, C, C++
-    tier_choice: str  # 브론즈, 실버, 골드, 플래티넘 이상, 티어 없음
+    # tier_choice: str  # 브론즈, 실버, 골드, 플래티넘 이상, 티어 없음

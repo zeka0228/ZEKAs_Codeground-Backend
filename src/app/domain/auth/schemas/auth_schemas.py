@@ -9,7 +9,7 @@ class SignupRequest(BaseModel):
     password: constr(min_length=8, max_length=20)
     nickname: str
     use_lang: str  # 예: Python, Java, C, C++
-    tier_choice: str  # 예: 브론즈, 실버, 골드, 플래티넘 이상, 티어 없음
+    # tier_choice: str  # 예: 브론즈, 실버, 골드, 플래티넘 이상, 티어 없음
 
 
 class SignupResponse(BaseModel):

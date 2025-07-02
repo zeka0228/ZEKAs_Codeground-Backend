@@ -14,7 +14,7 @@ from itertools import count
 
 # 매칭 루프 타이머
 MATCH_INTERVAL = 1  # 초 세팅 0.5 = 500ms
-GO_TO_HARD = 180  # 강제 풀 배치 기준 180 = 180s
+GO_TO_HARD = 15  # 강제 풀 배치 기준 180 = 180s
 match_id_counter = count(1)
 
 
@@ -83,6 +83,7 @@ class MatchService:
                 await self._task
             except asyncio.CancelledError:
                 pass
+
 
 # 되는거
 async def dispatch_pairs(pairs, algo):
