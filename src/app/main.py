@@ -12,6 +12,8 @@ from src.app.domain.user import router as user_router
 from src.app.domain.game import router as game_router
 from src.app.config.config import settings
 from src.app.domain.match.service.match_service import match_service
+from src.app.domain.ranking.router.ranking_controller import router as ranking_router
+from src.app.domain.ranking.service.ranking_scheduler import start_ranking_scheduler
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "resource" / "static"
@@ -21,6 +23,7 @@ STATIC_DIR = BASE_DIR / "resource" / "static"
 async def lifespan(app: FastAPI):
     print("matching 시작")
     match_service.start()  # 백그라운드 매칭 루프 시작
+    start_ranking_scheduler()  # ⬅️ 여기서 스케줄러 시작
     yield
     await match_service.stop()  # 서버 종료 시 안전하게 취소
 
@@ -42,6 +45,7 @@ app.include_router(router=webrtc_router, prefix=settings.API_V1_STR)
 app.include_router(router=match_router, prefix=settings.API_V1_STR)
 app.include_router(router=user_router, prefix=settings.API_V1_STR)
 app.include_router(router=game_router, prefix=settings.API_V1_STR)
+app.include_router(router=ranking_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
