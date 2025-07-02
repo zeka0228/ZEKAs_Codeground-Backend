@@ -70,11 +70,11 @@ async def update_match(db: Session, match_id: int, reason: str) -> None:
     now = datetime.now(timezone.utc)
     match = db.query(Match).filter(Match.match_id == match_id).first()
 
-    match.status = MatchStatus.FINISH
+    match.matching_status = MatchStatus.FINISH
     match.ending_status = MatchFinishStatus(reason)
     match.updated_at = now
     match.finished_at = now
-
+    db.commit()
 
 async def search_result(db: Session, game_id: int, user_id: int) -> str | None:
     match_log = await get_log_by_game_id(db, game_id, user_id)

@@ -1,7 +1,7 @@
 from fastapi import Depends, WebSocket, WebSocketDisconnect, APIRouter, Query
 from src.app.utils.game_session import game_rooms, game_user_map, ready_status
 import json
-from src.app.domain.game.crud.game_crud import update_user_log, update_match, search_result
+from src.app.domain.game.service.game_result_service import update_user_log, update_match, search_result
 from typing import Annotated
 from sqlalchemy.orm import Session
 from src.app.core.database import get_db
