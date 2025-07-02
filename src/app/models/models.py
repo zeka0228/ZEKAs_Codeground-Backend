@@ -27,6 +27,8 @@ class User(Base):
     # 관계 설정
     match_logs = relationship("MatchLog", back_populates="user")
     mmr = relationship("UserMmr", uselist=False, back_populates="user")
+    rankings = relationship("Ranking", back_populates="user")
+    rank_change_logs = relationship("RankChangeLog", back_populates="user")
 
 
 class UserMmr(Base):
@@ -126,3 +128,32 @@ class Problem(Base):
 
     match = relationship("Match", back_populates="problem", uselist=False)
     match_logs = relationship("MatchLog", back_populates="problem")
+
+
+class Ranking(Base):
+    __tablename__ = "ranking"
+
+    ranking_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    mmr = Column(Integer, nullable=False)
+    language = Column(String, nullable=False, server_default="python3")
+    rank = Column(Integer, nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    rank_diff = Column(Integer, nullable=True, server_default="0")
+
+    # 관계 설정
+    user = relationship("User", back_populates="rankings")
+
+
+class RankChangeLog(Base):
+    __tablename__ = "rank_change_log"
+
+    rank_change_log_id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    old_rank = Column(Integer, nullable=True)
+    new_rank = Column(Integer, nullable=True)
+    change_value = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # 관계 설정
+    user = relationship("User", back_populates="rank_change_logs")

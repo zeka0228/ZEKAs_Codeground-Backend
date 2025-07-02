@@ -58,3 +58,4 @@ numpy==2.3.1
 sse-starlette==2.3.6
 websockets==11.0.3
 scipy == 1.16.0
+APScheduler==3.11.0
