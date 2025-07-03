@@ -17,6 +17,7 @@ async def game_websocket(db: DB, websocket: WebSocket, game_id: int, user_id: in
 
     # 인증: 해당 게임방에 참여할 자격이 있는지 확인
     if game_id not in game_user_map or user_id not in game_user_map[game_id]:
+        await websocket.accept()  # 반드시 먼저 accept
         await websocket.close(code=4001)
         return
 
@@ -38,6 +39,16 @@ async def game_websocket(db: DB, websocket: WebSocket, game_id: int, user_id: in
 
         if user_id in ready_status.get(game_id, {}):
             ready_status[game_id].pop(user_id, None)
+
+            # Notify remaining players that this user disconnected
+        if game_rooms.get(game_id):
+            await broadcast_to_room(
+                game_id,
+                {
+                    "type": "opponent_disconnected",
+                    "user_id": user_id,
+                },
+            )
 
         if not game_rooms[game_id]:
             game_rooms.pop(game_id, None)
@@ -94,10 +105,22 @@ async def handle_game_message(db, websocket: WebSocket, game_id: int, user_id: i
 
 # 게임 내에서 발생하는 WebSocket 메시지를 처리하는 핵심 함수
 async def broadcast_to_room(game_id: int, message: dict, exclude: WebSocket = None):
-    for ws in game_rooms[game_id]:
-        if ws != exclude:
-            await ws.send_json(message)
+    disconnected_sockets = []
 
+    for ws in game_rooms.get(game_id, [])[:]:  # 복사본으로 안전 순회
+        if ws == exclude:
+            continue
+        try:
+            await ws.send_json(message)
+        except WebSocketDisconnect:
+            disconnected_sockets.append(ws)
+        except Exception as e:
+            print(f"[broadcast_to_room] 전송 중 예외 발생: {e}")
+            disconnected_sockets.append(ws)
+
+    for ws in disconnected_sockets:
+        if ws in game_rooms[game_id]:
+            game_rooms[game_id].remove(ws)
 
 async def process_match_result(
     db: Session, game_id: int, user_id: int, opponent_id: int, reason: str
