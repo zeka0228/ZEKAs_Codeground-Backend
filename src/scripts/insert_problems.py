@@ -1,9 +1,14 @@
 import json
+import os
 from sqlalchemy.orm import Session
 from src.app.models.models import Problem, ProblemDifficultyByTiers
 from src.app.core.database import SessionLocal
 
-def insert_problem_from_json(json_path):
+
+def insert_problem_from_json(json_file_name):
+    script_dir = os.path.dirname(__file__)
+    project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
+    json_path = os.path.join(project_root, json_file_name)
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -22,9 +27,10 @@ def insert_problem_from_json(json_path):
         db.commit()
     except Exception as e:
         db.rollback()
-        print("문제 저장 중 오류:",  e)
+        print("문제 저장 중 오류:", e)
     finally:
         db.close()
+
 
 json_files = [
     "data/prob-bronze.json",

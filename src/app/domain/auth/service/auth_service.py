@@ -35,7 +35,7 @@ async def join(db: Session, sign_up_request: schemas.SignupRequest) -> schemas.S
 
 async def authenticate_user(db: Session, email: str, password: str) -> schemas.LoginUserDto:
     user = crud.get_user_by_email(db, email)  # ✅ await 제거
-    if not user or not verify_password(password, user.password):
+    if not user or not await verify_password(password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="이메일 또는 비밀번호가 올바르지 않습니다."
         )

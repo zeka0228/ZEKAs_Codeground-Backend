@@ -69,7 +69,13 @@ async def handle_accept(match_id: int, user_id: int, db: Session):
         return
 
     ws_manager.match_state[match_id][user_id] = True
-    users = list(ws_manager.match_state[match_id].keys())
+
+    other_users = [uid for uid, accepted in ws_manager.match_state[match_id].items() if uid != user_id and not accepted]
+    if other_users:
+        await ws_manager.broadcast(
+            other_users,
+            {"type": "opponent_accepted", "user_id": user_id, "match_id": match_id},
+        )
 
     if all(ws_manager.match_state[match_id].values()):
         users = list(ws_manager.match_state[match_id].keys())
@@ -81,7 +87,6 @@ async def handle_accept(match_id: int, user_id: int, db: Session):
         for uid in users:
             user_cache.pop(uid, None)
         game_user_map[match.match_id] = users
-
         msg = {
             "type": "match_accepted",
             "game_id": match.match_id,
