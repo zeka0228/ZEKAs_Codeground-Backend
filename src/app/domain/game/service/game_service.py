@@ -27,7 +27,7 @@ async def evaluate_code(language: str, code: str):
 
 
 async def stream_evaluate_code(language: str, code: str, problem_id: str):
-    """Submit code to the judge service using /execute_v3 and stream results.
+    """Submit code to the judge service using /execute_v4 and stream results.
 
     This function returns an async generator yielding raw JSON messages received
     from the judge backend WebSocket. Each yielded value is a JSON formatted
@@ -35,7 +35,7 @@ async def stream_evaluate_code(language: str, code: str, problem_id: str):
     """
 
     base_url = settings.ONLINE_JUDGE_HOST_ENDPOINT.rsplit("/", 1)[0]
-    execute_url = f"{base_url}/execute_v3"
+    execute_url = f"{base_url}/execute_v4"
     payload = {
         "language": language,
         "code": code,
