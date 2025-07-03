@@ -1,9 +1,12 @@
 from src.app.domain.match.utils.mmr_measure import full_update, MatchScore
 from src.app.models.models import MatchResult, MatchFinishStatus, MatchStatus
 from src.app.domain.match.crud.match_crud import get_log_by_id, get_mmr_by_id, get_log_by_game_id
+from src.app.domain.ranking.crud.ranking_crud import get_rank_by_id
+from src.app.domain.ranking.service.ranking_service import create_rank
 from sqlalchemy.orm import Session
 from src.app.models.models import Match
 from datetime import datetime, timezone
+
 
 RESULT_TO_SCORE = {
     MatchResult.WIN: MatchScore.WIN,
@@ -15,6 +18,11 @@ RESULT_TO_SCORE = {
 async def update_user_mmr(db: Session, user_id: int) -> None:
     user_mmr_info = await get_mmr_by_id(db, user_id)
     match_log = await get_log_by_id(db, user_id)
+
+    user_rank = await get_rank_by_id(db, user_id)
+    if not user_rank:
+        await create_rank(db, user_id)
+        user_rank = await get_rank_by_id(db, user_id)
 
     if None in (user_mmr_info, match_log):
         return
@@ -41,6 +49,7 @@ async def update_user_mmr(db: Session, user_id: int) -> None:
 
     match_log.mmr_earned = new_rate - ori_mmr
     match_log.is_consumed = True
+    user_rank.mmr = int(new_rate)
     db.commit()
     return
 
@@ -76,8 +85,14 @@ async def update_match(db: Session, match_id: int, reason: str) -> None:
     match.finished_at = now
     db.commit()
 
+
 async def search_result(db: Session, game_id: int, user_id: int) -> str | None:
     match_log = await get_log_by_game_id(db, game_id, user_id)
     if not match_log or not match_log.result:
         return None
     return match_log.result.value
+
+
+async def get_mmr_earned(db: Session, game_id: int, user_id: int) -> int:
+    match_log = await get_log_by_game_id(db, game_id, user_id)
+    return int(match_log.mmr_earned)

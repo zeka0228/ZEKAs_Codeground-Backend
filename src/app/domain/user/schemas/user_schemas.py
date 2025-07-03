@@ -31,6 +31,7 @@ class UserResponseDto(BaseModel):
     username: str
     nickname: str
     use_lang: str
+    user_mmr: int
 
     model_config = {"from_attributes": True}
 
