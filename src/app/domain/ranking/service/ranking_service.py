@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
+
+from src.app.domain.match.crud.match_crud import get_mmr_by_id
 from src.app.domain.ranking.crud import ranking_crud as crud
 from src.app.domain.ranking.schemas import ranking_schemas as schemas
+from src.app.domain.user.crud.user_crud import get_user_by_id
 from src.app.models.models import UserMmr, Ranking
 
 
@@ -72,3 +75,12 @@ async def refresh_all_rankings(db: Session) -> dict:
 
     db.commit()
     return {"updated": total_updated, "logs": total_logs}
+
+
+async def create_rank(db: Session, user_id: int) -> None:
+    user_info = get_user_by_id(db, user_id)
+    user_mmr = await get_mmr_by_id(db, user_id)
+    user_rank = Ranking(user_id=user_info.user_id, mmr=int(user_mmr.rating), language=user_info.use_lang, rank=0)
+    db.add(user_rank)
+    db.commit()
+    return

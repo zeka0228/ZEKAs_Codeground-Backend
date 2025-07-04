@@ -1,7 +1,7 @@
 from fastapi import Depends, WebSocket, WebSocketDisconnect, APIRouter, Query
 from src.app.utils.game_session import game_rooms, game_user_map, ready_status
 import json
-from src.app.domain.game.service.game_result_service import update_user_log, update_match, search_result
+from src.app.domain.game.service.game_result_service import update_user_log, update_match, search_result, get_mmr_earned
 from typing import Annotated
 from sqlalchemy.orm import Session
 from src.app.core.database import get_db
@@ -91,9 +91,12 @@ async def handle_game_message(db, websocket: WebSocket, game_id: int, user_id: i
             reason = data.get("reason")
             print("시작")
             winner_id, reason = await process_match_result(db, game_id, user_id, opponent_id, reason)
+            mmr_earned = await get_mmr_earned(db, game_id, user_id)
             print(winner_id, reason)
-            await websocket.send_json({"type": "match_result", "winner": winner_id, "reason": reason})
-
+            await websocket.send_json({
+                "type": "match_result", "winner": winner_id, "earned": mmr_earned, "reason": reason
+            })
+            print(winner_id, reason, mmr_earned)
         else:
             print("에러 1")
             await websocket.send_json({"type": "error", "message": "Unknown message type"})
@@ -121,6 +124,7 @@ async def broadcast_to_room(game_id: int, message: dict, exclude: WebSocket = No
     for ws in disconnected_sockets:
         if ws in game_rooms[game_id]:
             game_rooms[game_id].remove(ws)
+
 
 async def process_match_result(
     db: Session, game_id: int, user_id: int, opponent_id: int, reason: str

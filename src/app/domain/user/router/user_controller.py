@@ -5,6 +5,7 @@ from src.app.core.security import get_current_user
 from src.app.domain.user.schemas import user_schemas as schemas
 from src.app.domain.user.service import user_service as service
 from src.app.models.models import User
+from src.app.domain.match.crud.match_crud import get_mmr_by_id
 
 router = APIRouter()
 
@@ -16,7 +17,13 @@ async def get_user_me(
 ):
     try:
         user = await service.get_user_data(db, current_user.user_id)
-        return schemas.UserResponseDto.model_validate(user)
+        user_mmr = await get_mmr_by_id(db, user.user_id)
+        mmr = user_mmr.rating if user_mmr.rating else 1000
+        user_dict = user.model_dump()
+        user_dict["user_mmr"] = int(mmr)
+
+        return schemas.UserResponseDto(**user_dict)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

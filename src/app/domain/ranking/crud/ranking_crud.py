@@ -38,3 +38,7 @@ def insert_rank_change_log(
         change_value=change_value,
     )
     db.add(log)
+
+
+async def get_rank_by_id(db: Session, user_id: int) -> type[Ranking] | None:
+    return db.query(Ranking).filter(Ranking.user_id == user_id).first()

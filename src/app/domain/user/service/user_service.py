@@ -31,7 +31,7 @@ async def update_my_profile(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="현재 비밀번호를 입력해야 합니다.",
             )
-        if not verify_pw(current_password, user.password):
+        if not await verify_pw(current_password, user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="현재 비밀번호가 일치하지 않습니다.",
