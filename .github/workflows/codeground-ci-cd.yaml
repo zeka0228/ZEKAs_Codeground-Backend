@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   deploy:
+    if: github.repository_owner == 'Kraftonjungle-MyWeapon'
     runs-on: ubuntu-latest
 
     steps:
