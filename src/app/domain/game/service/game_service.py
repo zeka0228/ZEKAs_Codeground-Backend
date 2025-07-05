@@ -1,7 +1,10 @@
 import httpx
 import websockets
+import json
 from fastapi import HTTPException
 from src.app.config.config import settings
+from sqlalchemy.orm import Session
+from src.app.domain.game.service import game_result_service
 
 
 async def evaluate_code(language: str, code: str):
@@ -26,7 +29,7 @@ async def evaluate_code(language: str, code: str):
     return {"result": "correct" if success else "wrong", "detail": results}
 
 
-async def stream_evaluate_code(language: str, code: str, problem_id: str):
+async def stream_evaluate_code(db: Session, user_id: int, match_id: int, language: str, code: str, problem_id: str):
     """Submit code to the judge service using /execute_v4 and stream results.
 
     This function returns an async generator yielding raw JSON messages received
@@ -61,4 +64,11 @@ async def stream_evaluate_code(language: str, code: str, problem_id: str):
         async for message in websocket:
             yield message
             if '"type":"final"' in message or '"type": "final"' in message:
+                # Parse the final message to extract the result
+                final_message = json.loads(message)
+                # Assuming 'result' is present in the final message from the judge service
+                result = final_message.get("result")
+
+                if result:
+                    await game_result_service.update_user_log(db, match_id, user_id, result)
                 break

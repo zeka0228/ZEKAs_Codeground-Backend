@@ -9,6 +9,8 @@ from src.app.domain.match.utils.queues import enqueue_user, dequeue_user, queue_
 from src.app.domain.match.service import match_service as service
 from src.app.domain.user.service.user_service import get_user_data
 from src.app.models.models import Problem
+from src.app.domain.match.schemas import match_schemas as schemas
+
 router = APIRouter()
 DB = Annotated[Session, Depends(get_db)]
 
@@ -129,3 +131,10 @@ async def match_cancel(user_id: int):
         queue_lock.release()
 
     return {"ok": True}
+
+
+@router.get("/match_logs/{user_id}", response_model=list[schemas.MatchLogSchema])
+async def get_user_match_logs(user_id: int, db: DB):
+    match_logs = await service.get_match_logs_by_user_id(db, user_id)
+    return match_logs
+

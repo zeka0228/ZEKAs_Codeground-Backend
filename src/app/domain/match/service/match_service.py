@@ -131,4 +131,8 @@ async def create_match_with_logs(db: Session, user_ids: list[int]) -> tuple[Matc
     return match, problem.problem_id
 
 
+async def get_match_logs_by_user_id(db: Session, user_id: int):
+    return await match_crud.get_match_logs_by_user_id(db, user_id)
+
+
 match_service = MatchService()

@@ -49,3 +49,7 @@ async def create_match_logs(db: Session, match_id: int, user_ids: list[int], pro
     db.add_all([user_a_log, user_b_log])
     db.commit()
     return
+
+
+async def get_match_logs_by_user_id(db: Session, user_id: int):
+    return db.query(MatchLog).filter(MatchLog.user_id == user_id).order_by(MatchLog.created_at.desc()).all()
