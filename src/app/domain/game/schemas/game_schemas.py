@@ -6,6 +6,7 @@ class SubmitRequest(BaseModel):
     language: str
     code: str
     problem_id: str
+    match_id: int
 
 
 class SubmitResponse(BaseModel):

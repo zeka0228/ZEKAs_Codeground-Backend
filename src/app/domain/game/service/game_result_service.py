@@ -15,9 +15,9 @@ RESULT_TO_SCORE = {
 }
 
 
-async def update_user_mmr(db: Session, user_id: int) -> None:
+async def update_user_mmr(db: Session, game_id: int, user_id: int) -> None:
     user_mmr_info = await get_mmr_by_id(db, user_id)
-    match_log = await get_log_by_id(db, user_id)
+    match_log = await get_log_by_game_id(db, game_id, user_id)
 
     user_rank = await get_rank_by_id(db, user_id)
     if not user_rank:
@@ -56,7 +56,7 @@ async def update_user_mmr(db: Session, user_id: int) -> None:
 
 async def update_user_log(db: Session, game_id: int, user_id: int, result: str) -> None:
     # MatchLog 가져오기
-    user_log = await get_log_by_id(db, user_id)
+    user_log = await get_log_by_game_id(db, game_id, user_id)
 
     # 결과 기록
     if result == "win":
@@ -71,8 +71,9 @@ async def update_user_log(db: Session, game_id: int, user_id: int, result: str) 
     else:
         raise ValueError(f"Invalid result '{result}' passed to update_user_log.")
     db.commit()
+    db.refresh(user_log)
 
-    return await update_user_mmr(db, user_id)
+    return await update_user_mmr(db, game_id, user_id)
 
 
 async def update_match(db: Session, match_id: int, reason: str) -> None:
