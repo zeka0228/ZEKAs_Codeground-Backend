@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     REPORT_BUCKET: str = os.environ.get("REPORT_BUCKET", "")
     PROFILE_IMAGE_BUCKET: str = os.environ.get("PROFILE_IMAGE_BUCKET", "")
     GITHUB_REDIRECT_URL: str
+    REDIS_HOST : str = os.environ.get("REDIS_HOST", "")
+    REDIS_PORT : int = os.environ.get("REDIS_PORT", "")
 
     class Config:
         env_file = ENV_PATH
